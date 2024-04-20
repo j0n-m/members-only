@@ -1,0 +1,16 @@
+extends layout 
+block content
+  p Fields marked * are required.
+  form(method="POST") 
+    div
+      label(for="title") Title (optional):
+      input#title(type="text" name="title" value=(post == undefined ? '': post.title))
+    div
+      label(for="content") *Content:
+      textarea#content(type="text" name="content" required) #{post==undefined ? '':post.content}
+    div
+      button(type="submit") Send
+  if(errors)
+    ul 
+      each error in errors 
+        li.text-danger=error.msg

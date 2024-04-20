@@ -1,0 +1,19 @@
+extends layout 
+block content 
+  h3 Join the Members Only Club.
+  //- - let memberCode = 'unknown';
+  //- - if(currentUser)
+  //-     - memberCode = currentUser.membershipCode;
+  if(currentUser.membershipCode >= 0)
+    p current membership: #{currentUser.membershipCode}
+  
+  if(isAuthenticated)
+    p Enter the secret code below to become a member.
+    form(method="POST")
+      label(for="code") Code: 
+      input#code(type="text" name="code" required)
+      button(type="submit") Join 
+    if(errors)
+      p.text-danger=errors[0].msg
+  else 
+    p You must #[a(href="/login") log in] to view this page.

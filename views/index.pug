@@ -3,6 +3,21 @@ extends layout
 block content 
   h2 Welcome to the message board!
   if(currentUser)
-    p Signed In as: #{currentUser.username}
+    p Signed In as: #[strong #{currentUser.username}]
+    if(currentUser.isAdmin)
+      p.text-danger Admin controls activated.
   else 
     p Not signed in
+  hr
+  if(posts)
+    each post in posts 
+      div.card
+        p=(isAuthenticated ? post.author.username : 'Anonymous')
+        p=post.title 
+        if(isAuthenticated)
+          p=post.dateCreated
+        p=post.content
+        if(isAuthenticated && currentUser.isAdmin)
+          form(method="post" action="/delete-post") 
+            input(type="hidden" name="post_id" value=post._id)
+            button(type="submit") Delete

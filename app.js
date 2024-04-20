@@ -25,7 +25,6 @@ dbConnectionTest().catch((err) => {
 app.use(async (req, res, next) => {
   try {
     await mongoose.connect(db);
-    console.log('connection opened')
     next();
   } catch (error) {
     return next(error)
@@ -37,7 +36,6 @@ passport.use(
     try {
       const user = await User.findOne({ username: username });
       if (!user) {
-        console.log('inside !user')
         return done(null, false, { message: "Incorrect username" });
       };
       // if (user.password !== password) {
@@ -88,6 +86,7 @@ app.use(session({
 }));
 app.use(passport.session());
 app.use((req, res, next) => {
+  console.log('currentUser is set in middleware');
   res.locals.currentUser = req.user;
   const numConnections = mongoose.connection.base.connections.length;
   console.log('open connections:', numConnections);
@@ -103,7 +102,9 @@ app.use('/', indexRouter);
 app.use((error, req, res, next) => {
   if (error) {
     console.log(error);
-    res.send('<h4>An error occured.</h4>')
+    res.render('error', {
+      error: 'An error occured. Failure to complete the request.',
+    })
   }
 })
 //error route handling

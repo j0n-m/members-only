@@ -3,17 +3,20 @@ const asyncHandler = require('express-async-handler');
 const mongoose = require('mongoose');
 const db = process.env.MONGODB;
 const User = require('../models/user');
-const Message = require('../models/user');
+const Message = require('../models/message');
 const bcrypt = require('bcryptjs');
 const passport = require('passport');
+require('dotenv').config();
 
 
 
 
 exports.index = asyncHandler(async (req, res, next) => {
-  // await mongoose.connection.close();
-  // console.log('connection closed')
-  res.render('index');
+  const posts = await Message.find({}, 'author content dateCreated title').limit(10).populate('author').sort({ dateCreated: -1 }).exec()
+  res.render('index', {
+    posts,
+    isAuthenticated: req.isAuthenticated(),
+  });
 });
 exports.logout_get = asyncHandler((req, res, next) => {
   req.logOut((err) => {
@@ -26,7 +29,12 @@ exports.logout_get = asyncHandler((req, res, next) => {
 })
 
 exports.signup_get = asyncHandler((req, res, next) => {
-  res.render('signup_form')
+  if (req.isAuthenticated()) {
+    res.redirect('/')
+  } else {
+    res.render('signup_form')
+  }
+
 });
 exports.signup_post = [
   body('firstname', 'First Name must be at least 2 characters.').trim().isLength({ min: 2, max: 10 }).withMessage('First Name must be between 2 and 10 characters.').escape(),
@@ -46,7 +54,8 @@ exports.signup_post = [
     if (usernameExists) {
       throw new Error('Username is already taken, choose another username.')
     }
-    mongoose.connection.close();
+    await mongoose.connection.close();
+    console.log('closed db connection')
   }),
   body('password', 'Passwords must be at least 5 characters.').trim().isLength({ min: 5 }).escape(),
   body('c_password', 'Passwords do not match.').trim().escape().custom((value, { req }) => {
@@ -73,10 +82,10 @@ exports.signup_post = [
           errors: errors.array(),
         });
       } else {
-        console.log('submitted!', user)
         await user.save();
-        mongoose.connection.close()
-        res.redirect('/');
+        await mongoose.connection.close()
+        console.log('closed db connection')
+        res.redirect('/login');
       }
     });
 
@@ -84,6 +93,9 @@ exports.signup_post = [
   })];
 
 exports.login_get = asyncHandler((req, res, next) => {
+  if (req.isAuthenticated()) {
+    return res.redirect('/');
+  }
   res.render('login_form', {
     failArray: req.session.messages,
   });
@@ -93,7 +105,86 @@ exports.login_post = [
   body('password', 'Passwords must be at least 5 characters.').trim().isLength({ min: 5 }).escape(),
   passport.authenticate("local", { failureRedirect: '/login', failureMessage: true }),
   asyncHandler((req, res, next) => {
-    res.locals.currentUser = req.user;
-    console.log('req.user', req.user);
     res.redirect('/');
   })];
+
+exports.join_get = asyncHandler(async (req, res, next) => {
+  if (!req.isAuthenticated()) {
+    return res.render('unauthenticated', {
+      title: 'Join the Members Only Club'
+    })
+  }
+  if (req.user.membershipCode > 0) {
+    //already a member
+    return res.redirect('/')
+  }
+  res.render('join_form', {
+    isAuthenticated: req.isAuthenticated(),
+  })
+});
+exports.join_post = [
+  body('code', 'Code must at least contain a character string.').trim().isLength({ min: 1 }).toLowerCase().custom((val) => {
+    const correctCode = (val === process.env.MEMBER_CODE);
+    console.log(correctCode, val, process.env.MEMBER_CODE);
+    if (correctCode) {
+      return true;
+    }
+    throw new Error('Membership Code is either incorrect or expired.')
+
+  }).escape(),
+  asyncHandler(async (req, res, next) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.render('join_form', {
+        isAuthenticated: req.isAuthenticated(),
+        errors: errors.array()
+      })
+    }
+    console.log('correct code!, redirecting')
+    const user = await User.findById(req.user._id, 'membershipCode').exec();
+    if (user.membershipCode === 0) {
+      await User.findByIdAndUpdate(user._id, { membershipCode: 1 }).exec();
+    }
+    res.redirect('/');
+  })];
+exports.create_get = asyncHandler(async (req, res, next) => {
+  if (!req.isAuthenticated()) {
+    return res.render('unauthenticated')
+  }
+  res.render('create_message')
+});
+exports.create_post = [
+  body('title').trim().optional({ values: 'falsy' }).escape(),
+  body('content', 'Content must be between 1 and 70 characters.').trim().isLength({ min: 1, max: 70 }).escape(),
+  asyncHandler(async (req, res, next) => {
+    const errors = validationResult(req);
+    const message = new Message({
+      author: req.user.id,
+      title: req.body.title,
+      content: req.body.content
+    })
+    if (!errors.isEmpty()) {
+      return res.render('create_message', {
+        post: message,
+        errors: errors.array()
+      })
+    }
+    await message.save();
+    console.log('Posted a message!')
+    res.redirect('/');
+
+  })];
+exports.deletePost_post = asyncHandler(async (req, res, next) => {
+  if (!req.isAuthenticated() || !req.user.isAdmin) {
+    return res.redirect('/');
+  }
+  const messageToDelete = await Message.findById(req.body.post_id)
+  if (messageToDelete == null) {
+    const error = new Error('Cannot delete a post that doesn\'t exist.');
+    console.log('Error deleting a post: ', req.body.post_id);
+    return next(error)
+  }
+  await Message.findByIdAndDelete(messageToDelete._id)
+  console.log('Successfully deleted post.')
+  res.redirect('/');
+})
