@@ -39,7 +39,7 @@ exports.signup_get = asyncHandler((req, res, next) => {
 exports.signup_post = [
   body('firstname', 'First Name must be at least 2 characters.').trim().isLength({ min: 2, max: 10 }).withMessage('First Name must be between 2 and 10 characters.').escape(),
   body('lastname', 'Last Name must be at least 2 characters.').trim().isLength({ min: 2, max: 10 }).withMessage('Last Name must be between 2 and 10 characters.').escape(),
-  body('username', 'Username must be between 3 and 16 characters.').trim().isLength({ min: 3, max: 16 }).escape().custom(async (value) => {
+  body('username', 'Username must be between 3 and 16 characters.').trim().isLength({ min: 3, max: 16 }).toLowerCase().escape().custom(async (value) => {
     await mongoose.connect(db);
     const trimmedStr = value.replaceAll(" ", "");
     if (value !== trimmedStr) {
