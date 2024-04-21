@@ -1,5 +1,7 @@
 extends layout 
 block content 
   if(title)
-    h3=title 
-  p You must #[a(href="/login") login] to view this page.
+    h3.title.mt-4=title 
+    p.text-muted.text-center You must #[a(href="/login") login] to view this page.
+  else
+    p.text-muted.text-center.mt-4 You must #[a(href="/login") login] to view this page.

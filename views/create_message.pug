@@ -1,16 +1,25 @@
 extends layout 
 block content
-  p Fields marked * are required.
-  form(method="POST") 
-    div
-      label(for="title") Title (optional):
-      input#title(type="text" name="title" value=(post == undefined ? '': post.title))
-    div
-      label(for="content") *Content:
-      textarea#content(type="text" name="content" required) #{post==undefined ? '':post.content}
-    div
-      button(type="submit") Send
-  if(errors)
-    ul 
-      each error in errors 
-        li.text-danger=error.msg
+  div.content-layout
+    h2.title.mt-4 Post a message
+    p.text-muted.text-center Fields marked * are required.
+    div.form-container
+      form(method="POST") 
+        div.input-group.mb-3
+          span.input-group-text Title: 
+          input.form-control(type="text" name="title" value=(post == undefined ? '': post.title))
+        div.input-group.mb-3
+          span.input-group-text Body*: 
+          textarea.form-control(type="text" name="content" required) #{post==undefined ? '':post.content}
+        div.input-group.mb-3
+          button.btn.btn-success.mx-auto(type="submit") Post
+        //- div
+        //-   label(for="title") Title (optional):
+        //-   input#title(type="text" name="title" value=(post == undefined ? '': post.title))
+        //- div
+        //-   label(for="content") *Content:
+        //-   textarea#content(type="text" name="content" required) #{post==undefined ? '':post.content}
+      if(errors)
+        ul 
+          each error in errors 
+            li.text-danger=error.msg

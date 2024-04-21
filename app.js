@@ -53,7 +53,6 @@ passport.use(
   })
 );
 passport.serializeUser((user, done) => {
-  console.log('serialize is called', user)
   done(null, user.id); //sets req.session.passport.user == user.id 
 });
 
@@ -86,10 +85,8 @@ app.use(session({
 }));
 app.use(passport.session());
 app.use((req, res, next) => {
-  console.log('currentUser is set in middleware');
   res.locals.currentUser = req.user;
-  const numConnections = mongoose.connection.base.connections.length;
-  console.log('open connections:', numConnections);
+  // const numConnections = mongoose.connection.base.connections.length;
   next();
 })
 

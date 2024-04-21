@@ -1,27 +1,29 @@
 extends layout 
 block content 
-  h2 Sign Up
-  form(method="POST")
-    div 
-      label(for="firstname") First Name: 
-      input#firstname(type="text" name="firstname" required value=(user == undefined ? '':user.firstName))
-    div 
-      label(for="lastname") Last Name: 
-      input#lastname(type="text" name="lastname" required value=(user == undefined ? '':user.lastName))
-    div 
-      label(for="username") Username: 
-      input#username(type="text" name="username" required value=(user == undefined ? '':user.username))
-    div 
-      label(for="password") Password: 
-      input#password(type="password" name="password" required)
-    div 
-      label(for="c_password") Confirm Password: 
-      input#c_password(type="password" name="c_password" required)
-    div 
-      button(type="submit") Sign up
-  if(errors)
-    hr
-    ul 
-      p Fix the errors below to sign up:
-      each error in errors 
-        li #{error.msg}
+  div.content-layout
+    h2.title.mb-4 Create an account
+    div.form-container
+      form(method="POST") 
+        div.input-group.mb-3
+          span.input-group-text First Name: 
+          input.form-control(type="text" name="firstname" required value=(user == undefined ? '':user.firstName))
+        div.input-group.mb-3
+          span.input-group-text Last Name: 
+          input.form-control(type="text" name="lastname" required value=(user == undefined ? '':user.lastName))
+        div.input-group.mb-3
+          span.input-group-text Username: 
+          input.form-control(type="text" name="username" required value=(user == undefined ? '':user.username))
+        div.input-group.mb-3
+          span.input-group-text Password: 
+          input.form-control(type="password" name="password" required)
+        div.input-group.mb-3
+          span.input-group-text Confirm Password: 
+          input.form-control(type="password" name="c_password" required)
+        div.input-group.mb-3
+          button.btn.btn-success.mx-auto(type="submit") Sign Up
+    if(errors)
+      hr
+      ul 
+        p.text-muted Fix the errors below to sign up:
+        each error in errors 
+          li.text-danger #{error.msg}

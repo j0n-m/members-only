@@ -1,0 +1,18 @@
+extends layout 
+block content 
+  h3.title.mt-4 Delete a post 
+  p.text-center.text-muted Message ID: #{post.id}
+  .card.mx-auto.mb-3(style="max-width: 600px")
+    .card-header.d-flex.justify-content-between
+      span=post.author.username
+      span=post.dateCreated
+    .card-body
+      if(post.title)
+        p.card-text=post.title
+      p.card-text=post.content
+  hr
+  form(method="POST" action="/delete-post") 
+      p.text-center.fw-bold Are you sure you want to delete this post?
+      input(type="hidden" name="post_id" value=post._id)
+      .input-field.d-flex.justify-content-center
+        button.btn.btn-danger(type="submit") Delete

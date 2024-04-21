@@ -1,23 +1,32 @@
 extends layout
 
 block content 
-  h2 Welcome to the message board!
-  if(currentUser)
-    p Signed In as: #[strong #{currentUser.username}]
-    if(currentUser.isAdmin)
-      p.text-danger Admin controls activated.
-  else 
-    p Not signed in
-  hr
-  if(posts)
+  p.h1.text-muted.text-center.mt-4.fw-bold The #[span.text-success Members] Only Board
+  p.h3.text-muted.text-center.mt-4.fw-bold Log in to #[span.text-primary create] a post
+  p.h3.text-muted.text-center.mt-4.fw-bold.mb-4 Non-Members can view posts with #[span(style="color:#ff2323") limited] info
+  //- currentUser variable = req.user
+
+  if(posts.length)
     each post in posts 
-      div.card
-        p=(isAuthenticated ? post.author.username : 'Anonymous')
-        p=post.title 
-        if(isAuthenticated)
-          p=post.dateCreated
-        p=post.content
+      div.mx-auto.card.mb-3(style="max-width: 600px; background-color: #a0f0ff")
+        .card-header.d-flex.justify-content-between
+          if(isAuthenticated)
+            span=post.author.username
+            span=post.dateCreated
+          else 
+            span='Anonymous'
+            span=''
+        .card-body
+          if(post.title)
+            p.card-text.fw-bold=post.title 
+          p.card-text=post.content
         if(isAuthenticated && currentUser.isAdmin)
-          form(method="post" action="/delete-post") 
-            input(type="hidden" name="post_id" value=post._id)
-            button(type="submit") Delete
+          .py-2.px-3
+            a(href=`/delete-post/${post.id}`) 
+              button.btn.btn-danger(type="button" style="padding: 2px") Delete
+            //- form(method="post" action="/delete-post") 
+            //-   input(type="hidden" name="post_id" value=post._id)
+            //-   button.btn.btn-danger(type="submit" style="padding: 2px") Delete
+  else 
+    if(isAuthenticated)
+      p.text-muted.text-center Be the first to #[span.text-primary #[a(href="/create") post]] a message.

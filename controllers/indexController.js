@@ -42,20 +42,15 @@ exports.signup_post = [
   body('username', 'Username must be between 3 and 16 characters.').trim().isLength({ min: 3, max: 16 }).escape().custom(async (value) => {
     await mongoose.connect(db);
     const trimmedStr = value.replaceAll(" ", "");
-    console.log('value:', value);
-    console.log('trimmedVal:', trimmedStr);
     if (value !== trimmedStr) {
-      console.log('inside value !== trimmed')
       throw new Error('Username cannot contain any spaces.')
     }
 
     const usernameExists = await User.findOne({ username: value }, 'username');
-    console.log('usernameExists', usernameExists);
     if (usernameExists) {
       throw new Error('Username is already taken, choose another username.')
     }
     await mongoose.connection.close();
-    console.log('closed db connection')
   }),
   body('password', 'Passwords must be at least 5 characters.').trim().isLength({ min: 5 }).escape(),
   body('c_password', 'Passwords do not match.').trim().escape().custom((value, { req }) => {
@@ -76,7 +71,6 @@ exports.signup_post = [
         password: hash
       });
       if (!errors.isEmpty()) {
-        console.log('There are errors!')
         res.render('signup_form', {
           user,
           errors: errors.array(),
@@ -84,7 +78,6 @@ exports.signup_post = [
       } else {
         await user.save();
         await mongoose.connection.close()
-        console.log('closed db connection')
         res.redirect('/login');
       }
     });
@@ -125,7 +118,6 @@ exports.join_get = asyncHandler(async (req, res, next) => {
 exports.join_post = [
   body('code', 'Code must at least contain a character string.').trim().isLength({ min: 1 }).toLowerCase().custom((val) => {
     const correctCode = (val === process.env.MEMBER_CODE);
-    console.log(correctCode, val, process.env.MEMBER_CODE);
     if (correctCode) {
       return true;
     }
@@ -140,7 +132,6 @@ exports.join_post = [
         errors: errors.array()
       })
     }
-    console.log('correct code!, redirecting')
     const user = await User.findById(req.user._id, 'membershipCode').exec();
     if (user.membershipCode === 0) {
       await User.findByIdAndUpdate(user._id, { membershipCode: 1 }).exec();
@@ -170,10 +161,23 @@ exports.create_post = [
       })
     }
     await message.save();
-    console.log('Posted a message!')
     res.redirect('/');
 
   })];
+exports.deletePost_get = asyncHandler(async (req, res, next) => {
+  if (!req.isAuthenticated() || !req.user.isAdmin) {
+    return res.redirect('/');
+  }
+  const message = await Message.findById(req.params.id).populate('author').exec();
+  if (message == null) {
+    return res.render('error', {
+      error: `Cannot find the message with the id: ${req.params.id}`
+    })
+  }
+  res.render('delete_post', {
+    post: message
+  })
+})
 exports.deletePost_post = asyncHandler(async (req, res, next) => {
   if (!req.isAuthenticated() || !req.user.isAdmin) {
     return res.redirect('/');
@@ -181,10 +185,8 @@ exports.deletePost_post = asyncHandler(async (req, res, next) => {
   const messageToDelete = await Message.findById(req.body.post_id)
   if (messageToDelete == null) {
     const error = new Error('Cannot delete a post that doesn\'t exist.');
-    console.log('Error deleting a post: ', req.body.post_id);
     return next(error)
   }
   await Message.findByIdAndDelete(messageToDelete._id)
-  console.log('Successfully deleted post.')
   res.redirect('/');
 })

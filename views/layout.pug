@@ -12,25 +12,19 @@ html
     - if(currentUser)
       - isMember = (currentUser.membershipCode > 0 ? true: false);
     header 
-      nav
-        ul 
-          li 
-            a(href="/") Home
-          li 
-            a(href="/signup") Sign Up 
-          if(!currentUser)
-            li 
-              a(href="/login") Login
-          else
-            li 
-              a(href="/logout") Log out 
-            li 
-              a(href="/create") Create a Post
+      nav.navbar.navbar-expand-lg.navbar-light.bg-dark.justify-content-between.p-4
+        a.text-white.navbar-brand(href="/") #[span.text-success Members] Only Club
+        div.navbar-nav.d-flex
+          a.text-white.nav-item.nav-link(href="/") Home
           if(!isMember)
-            li 
-              a(href="/join") Become a member 
+            a.text-white.nav-item.nav-link(href="/join") Become a member
+          if(!currentUser)
+            a.text-white.nav-item.nav-link(href="/login") Login
+            a.text-white.nav-item.nav-link(href="/signup") Sign Up 
+          else 
+            a.text-white.nav-item.nav-link(href="/create") Create a Post
+            a.text-white.nav-item.nav-link(href="/logout") Log out
           
-        
-
     .content 
       block content
+  footer.text-white.text-center.mt-4(style="background-color: #212529; padding: 1.5rem") Created by Jon Monarrez &copy; 2024
