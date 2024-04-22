@@ -5,7 +5,7 @@ block content
   .card.mx-auto.mb-3(style="max-width: 600px")
     .card-header.d-flex.justify-content-between
       span=post.author.username
-      span=post.dateCreated
+      span=post.dateFormat
     .card-body
       if(post.title)
         p.card-text=post.title

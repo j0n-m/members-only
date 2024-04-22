@@ -146,13 +146,14 @@ exports.create_get = asyncHandler(async (req, res, next) => {
 });
 exports.create_post = [
   body('title').trim().optional({ values: 'falsy' }).escape(),
-  body('content', 'Content must be between 1 and 70 characters.').trim().isLength({ min: 1, max: 70 }).escape(),
+  body('content', 'Content must be between 1 and 70 characters.').trim().isLength({ min: 2, max: 70 }).escape(),
   asyncHandler(async (req, res, next) => {
     const errors = validationResult(req);
     const message = new Message({
       author: req.user.id,
       title: req.body.title,
-      content: req.body.content
+      content: req.body.content,
+      dateCreated: Date.now()
     })
     if (!errors.isEmpty()) {
       return res.render('create_message', {
