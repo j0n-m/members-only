@@ -5,6 +5,8 @@ block content
   p.h3.text-muted.text-center.mt-4.fw-bold Log in to #[span.text-primary create] a post
   p.h3.text-muted.text-center.mt-4.fw-bold.mb-4 Non-Members can view posts with #[span(style="color:#ff2323") limited] info
   //- currentUser variable = req.user
+  if(currentUser)
+    p.h4.text-muted.text-center.my-4 Welcome #[span(style="color:#17a2b8") #{currentUser.username}] (#{currentUser.membershipCode == 0 ? 'Non-Member' : 'Member'})
 
   if(posts.length)
     each post in posts 
